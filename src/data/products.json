@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "title": "Tablet Pro",
+    "description": "Una tablet moderna y potente.",
+    "code": "TAB789",
+    "price": 800,
+    "status": true,
+    "stock": 15,
+    "category": "Tecnología",
+    "thumbnails": [
+      "https://example.com/tablet.jpg"
+    ]
+  }
+]
