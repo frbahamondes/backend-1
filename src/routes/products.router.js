@@ -12,7 +12,7 @@ const readProductsFile = () => {
         return JSON.parse(data);
     } catch (err) {
         console.error('Error al leer el archivo products.json:', err);
-        return []; // Si hay un error, devolvemos un array vacío
+        return [];
     }
 };
 
@@ -25,26 +25,22 @@ const writeProductsFile = (data) => {
     }
 };
 
-// Ruta para listar todos los productos
+// 📌 Ruta para listar todos los productos
 router.get('/', (req, res) => {
-    console.log('GET /api/products fue llamado'); // Log de depuración
+    console.log('GET /api/products fue llamado');
     const limit = req.query.limit;
     const data = readProductsFile();
     const products = limit ? data.slice(0, limit) : data;
     res.json(products);
 });
 
-// Ruta para obtener un producto por ID
+// 📌 Ruta para obtener un producto por ID
 router.get('/:pid', (req, res) => {
     const { pid } = req.params;
-    console.log(`GET /api/products/${pid} fue llamado`); // Log de depuración
+    console.log(`GET /api/products/${pid} fue llamado`);
 
     const data = readProductsFile();
-    console.log('Datos actuales en products.json:', data); // Log para verificar los datos leídos
-
-    // Busca el producto por ID
     const product = data.find(p => p.id == pid);
-    console.log(`Producto encontrado para ID ${pid}:`, product); // Log para verificar el producto encontrado
 
     if (!product) {
         return res.status(404).json({ error: 'Producto no encontrado' });
@@ -52,29 +48,40 @@ router.get('/:pid', (req, res) => {
     res.json(product);
 });
 
-// Ruta para agregar un nuevo producto
+// 📌 Ruta para agregar un nuevo producto
 router.post('/', (req, res) => {
-    console.log('POST /api/products fue llamado'); // Log de depuración
+    console.log('POST /api/products fue llamado');
     const data = readProductsFile();
     const newProduct = req.body;
 
-    // Validar que el body contiene los campos necesarios
+    // Validar que el body contiene los campos obligatorios
     if (!newProduct.title || !newProduct.price || !newProduct.code) {
         return res.status(400).json({ error: 'Faltan campos obligatorios (title, price, code)' });
     }
 
     // Autogenerar un ID único
     const newId = data.length > 0 ? data[data.length - 1].id + 1 : 1;
-    const product = { id: newId, ...newProduct };
 
-    data.push(product);
-    writeProductsFile(data); // Guardar el producto
-    res.status(201).json(product); // Responder con el nuevo producto
+    // Asignar valores por defecto si no están presentes
+    const productWithDefaults = {
+        id: newId,
+        title: newProduct.title,
+        description: newProduct.description || "Sin descripción",
+        price: newProduct.price,
+        code: newProduct.code,
+        category: newProduct.category || "Sin categoría",
+        stock: newProduct.stock || 10,
+        status: newProduct.status !== undefined ? newProduct.status : true
+    };
+
+    data.push(productWithDefaults);
+    writeProductsFile(data);
+    res.status(201).json(productWithDefaults);
 });
 
-// Ruta para actualizar un producto por ID
+// 📌 Ruta para actualizar un producto por ID
 router.put('/:pid', (req, res) => {
-    console.log(`PUT /api/products/${req.params.pid} fue llamado`); // Log de depuración
+    console.log(`PUT /api/products/${req.params.pid} fue llamado`);
     const { pid } = req.params;
     const data = readProductsFile();
     const updatedProduct = req.body;
@@ -85,13 +92,13 @@ router.put('/:pid', (req, res) => {
     }
 
     data[productIndex] = { ...data[productIndex], ...updatedProduct, id: data[productIndex].id };
-    writeProductsFile(data); // Guardar los cambios
+    writeProductsFile(data);
     res.json(data[productIndex]);
 });
 
-// Ruta para eliminar un producto por ID
+// 📌 Ruta para eliminar un producto por ID
 router.delete('/:pid', (req, res) => {
-    console.log(`DELETE /api/products/${req.params.pid} fue llamado`); // Log de depuración
+    console.log(`DELETE /api/products/${req.params.pid} fue llamado`);
     const { pid } = req.params;
     const data = readProductsFile();
 
@@ -100,7 +107,7 @@ router.delete('/:pid', (req, res) => {
         return res.status(404).json({ error: 'Producto no encontrado' });
     }
 
-    writeProductsFile(newData); // Guardar los cambios
+    writeProductsFile(newData);
     res.status(204).send();
 });
 

@@ -1,35 +1,41 @@
-<h1>Lista de Productos</h1>
-<ul id="productos-lista">
-    {{#each products}}
-        <li data-id="{{id}}">
-            <strong>{{title}}</strong> - ${{price}}
-            <p>{{description}}</p>
-        </li>
-    {{/each}}
-</ul>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos</title>
+    <link rel="stylesheet" href="/css/styles.css"> <!-- 🔗 Enlace al CSS -->
+</head>
+<body>
+    <h1>Lista de Productos</h1>
+    <ul id="productos-lista">
+        {{#each products}}
+            <li class="product-card" data-id="{{id}}">
+                <strong>{{title}}</strong> - ${{price}}
+                <p>{{description}}</p>
+            </li>
+        {{/each}}
+    </ul>
 
-<!-- Cliente WebSockets -->
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
+    <!-- Cliente WebSockets -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const productosLista = document.getElementById('productos-lista');
 
-    // Capturar el contenedor de productos
-    const productosLista = document.getElementById('productos-lista');
+        socket.on('actualizarProductos', (productos) => {
+            console.log('📢 Nueva lista de productos recibida:', productos);
+            productosLista.innerHTML = ''; // Limpiar la lista
 
-    // Escuchar actualizaciones de productos desde el servidor
-    socket.on('actualizarProductos', (productos) => {
-        console.log('📢 Nueva lista de productos recibida:', productos);
-        
-        // Limpiar la lista actual
-        productosLista.innerHTML = '';
-
-        // Renderizar la nueva lista de productos
-        productos.forEach(producto => {
-            const li = document.createElement('li');
-            li.setAttribute('data-id', producto.id);
-            li.innerHTML = `<strong>${producto.title}</strong> - $${producto.price}
-                            <p>${producto.description}</p>`;
-            productosLista.appendChild(li);
+            productos.forEach(producto => {
+                const li = document.createElement('li');
+                li.classList.add('product-card');
+                li.setAttribute('data-id', producto.id);
+                li.innerHTML = `<strong>${producto.title}</strong> - $${producto.price}
+                                <p>${producto.description}</p>`;
+                productosLista.appendChild(li);
+            });
         });
-    });
-</script>
+    </script>
+</body>
+</html>

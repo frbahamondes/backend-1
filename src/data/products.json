@@ -11,5 +11,23 @@
     "thumbnails": [
       "https://example.com/tablet.jpg"
     ]
+  },
+  {
+    "id": 3,
+    "title": "Huawei Matepad 3",
+    "description": "Tablet super genial de Huawei",
+    "price": "100800",
+    "category": "Tecnología",
+    "stock": "2",
+    "status": true
+  },
+  {
+    "id": 4,
+    "title": "Google Home Mini",
+    "description": "Asistente lite para el hogar de Google",
+    "price": "49500",
+    "category": "Tecnología",
+    "stock": "1",
+    "status": true
   }
 ]
