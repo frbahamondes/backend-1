@@ -7,5 +7,16 @@
 </head>
 <body>
     {{{body}}} <!-- Aquí se renderizará el contenido de cada vista -->
+
+    <!-- Agregamos la conexión con Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(); // Conectamos con el servidor de WebSockets
+
+        // Escuchamos el mensaje de bienvenida desde el servidor
+        socket.on('mensaje', (data) => {
+            console.log('Mensaje del servidor:', data);
+        });
+    </script>
 </body>
 </html>
