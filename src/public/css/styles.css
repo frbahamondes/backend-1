@@ -24,13 +24,13 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* 🎨 Estilo para la lista de productos */
+/* 🎨 Contenedor de productos (ahora centrado) */
 .product-container {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center; /* Centra las tarjetas horizontalmente */
     gap: 20px;
-    justify-content: center;
-    padding: 0;
+    padding: 20px;
     margin-top: 20px;
 }
 
@@ -79,6 +79,7 @@ h2 {
     margin-top: 30px;
 }
 
+/* 🎨 Contenedor del formulario */
 .form-container {
     display: flex;
     flex-wrap: wrap;
@@ -89,8 +90,12 @@ h2 {
     border-radius: 8px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+/* 🎨 Campos del formulario */
 .form-container input,
 .form-container select {
     padding: 10px;
@@ -107,6 +112,7 @@ h2 {
     font-size: 14px;
 }
 
+/* 🎨 Botón de agregar */
 .add-btn {
     background: #28a745;
     color: white;

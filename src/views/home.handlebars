@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Productos</title>
     <link rel="stylesheet" href="/css/styles.css"> <!-- 🔗 Enlace al CSS -->
 </head>
+
 <body>
     <h1>Lista de Productos</h1>
-    <ul id="productos-lista">
+
+    <!-- Contenedor donde se mostrarán los productos -->
+    <div id="productos-lista" class="product-container">
         {{#each products}}
-            <li class="product-card" data-id="{{id}}">
-                <strong>{{title}}</strong> - ${{price}}
-                <p>{{description}}</p>
-            </li>
+        <div class="product-card" data-id="{{id}}">
+            <strong>{{title}}</strong> - ${{price}}
+            <p>{{description}}</p>
+        </div>
         {{/each}}
-    </ul>
+    </div>
 
     <!-- Cliente WebSockets -->
     <script src="/socket.io/socket.io.js"></script>
@@ -28,14 +32,15 @@
             productosLista.innerHTML = ''; // Limpiar la lista
 
             productos.forEach(producto => {
-                const li = document.createElement('li');
-                li.classList.add('product-card');
-                li.setAttribute('data-id', producto.id);
-                li.innerHTML = `<strong>${producto.title}</strong> - $${producto.price}
-                                <p>${producto.description}</p>`;
-                productosLista.appendChild(li);
+                const div = document.createElement('div');
+                div.classList.add('product-card');
+                div.setAttribute('data-id', producto.id);
+                div.innerHTML = `<strong>${producto.title}</strong> - $${producto.price}
+                <p>${producto.description}</p>`;
+                productosLista.appendChild(div);
             });
         });
     </script>
 </body>
+
 </html>

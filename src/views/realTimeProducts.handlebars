@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Productos en Tiempo Real</title>
-    <link rel="stylesheet" href="/public/css/styles.css"> <!-- 🔗 Enlace a la hoja de estilos -->
+    <link rel="stylesheet" href="/css/styles.css"> <!-- 🔗 Enlace a la hoja de estilos corregido -->
 </head>
 <body>
     <h1>Lista de Productos en Tiempo Real</h1>
@@ -55,6 +55,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        const productList = document.getElementById('product-list');
 
         // Enviar producto al servidor cuando se envía el formulario
         document.getElementById('product-form').addEventListener('submit', function (e) {
@@ -76,7 +77,6 @@
 
         // Escuchar eventos de actualización de productos
         socket.on('actualizarProductos', (products) => {
-            const productList = document.getElementById('product-list');
             productList.innerHTML = ''; // Limpiar la lista antes de actualizarla
 
             products.forEach(product => {
@@ -99,6 +99,9 @@
         function eliminarProducto(id) {
             socket.emit('eliminarProducto', id);
         }
+
+        // 🟢 Emitir un evento para cargar los productos iniciales cuando la página se carga
+        socket.emit('solicitarProductos');
     </script>
 </body>
 </html>
