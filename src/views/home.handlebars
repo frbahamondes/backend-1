@@ -1,9 +1,35 @@
 <h1>Lista de Productos</h1>
-<ul>
+<ul id="productos-lista">
     {{#each products}}
-        <li>
+        <li data-id="{{id}}">
             <strong>{{title}}</strong> - ${{price}}
             <p>{{description}}</p>
         </li>
     {{/each}}
 </ul>
+
+<!-- Cliente WebSockets -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // Capturar el contenedor de productos
+    const productosLista = document.getElementById('productos-lista');
+
+    // Escuchar actualizaciones de productos desde el servidor
+    socket.on('actualizarProductos', (productos) => {
+        console.log('📢 Nueva lista de productos recibida:', productos);
+        
+        // Limpiar la lista actual
+        productosLista.innerHTML = '';
+
+        // Renderizar la nueva lista de productos
+        productos.forEach(producto => {
+            const li = document.createElement('li');
+            li.setAttribute('data-id', producto.id);
+            li.innerHTML = `<strong>${producto.title}</strong> - $${producto.price}
+                            <p>${producto.description}</p>`;
+            productosLista.appendChild(li);
+        });
+    });
+</script>

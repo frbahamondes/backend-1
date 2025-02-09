@@ -1,0 +1,62 @@
+<h1>Lista de Productos en Tiempo Real</h1>
+
+<!-- Contenedor donde se mostrarán los productos -->
+<ul id="product-list">
+    {{#each products}}
+        <li id="product-{{id}}">
+            <strong>{{title}}</strong> - ${{price}}
+            <p>{{description}}</p>
+            <button onclick="eliminarProducto('{{id}}')">🗑 Eliminar</button>
+        </li>
+    {{/each}}
+</ul>
+
+<!-- Formulario para agregar productos -->
+<h2>Agregar Producto</h2>
+<form id="product-form">
+    <input type="text" id="title" placeholder="Nombre del producto" required />
+    <input type="text" id="description" placeholder="Descripción" required />
+    <input type="number" id="price" placeholder="Precio" required />
+    <button type="submit">➕ Agregar Producto</button>
+</form>
+
+<!-- Script para manejar WebSockets -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // Enviar producto al servidor cuando se envía el formulario
+    document.getElementById('product-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const product = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            price: document.getElementById('price').value
+        };
+
+        socket.emit('agregarProducto', product); // Enviamos el producto al servidor
+    });
+
+    // Escuchar eventos de actualización de productos
+    socket.on('actualizarProductos', (products) => {
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = ''; // Limpiar la lista antes de actualizarla
+
+        products.forEach(product => {
+            const li = document.createElement('li');
+            li.id = `product-${product.id}`;
+            li.innerHTML = `
+                <strong>${product.title}</strong> - $${product.price}
+                <p>${product.description}</p>
+                <button onclick="eliminarProducto('${product.id}')">🗑 Eliminar</button>
+            `;
+            productList.appendChild(li);
+        });
+    });
+
+    // Enviar evento para eliminar producto
+    function eliminarProducto(id) {
+        socket.emit('eliminarProducto', id);
+    }
+</script>

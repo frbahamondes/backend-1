@@ -2,12 +2,12 @@ const express = require('express');
 const { engine } = require('express-handlebars');
 const path = require('path');
 const fs = require('fs');
-const http = require('http'); // Importamos http
-const { Server } = require('socket.io'); // Importamos socket.io
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 
 const app = express();
-const server = http.createServer(app); // Creamos el servidor HTTP
-const io = new Server(server); // Asociamos socket.io al servidor
+const server = http.createServer(app); 
+const io = new Server(server); 
 
 // Configurar Handlebars como motor de plantillas
 app.engine('handlebars', engine());
@@ -24,11 +24,8 @@ const cartsRouter = require('./routes/carts.router');
 // Ruta para renderizar la vista home con productos
 app.get('/', (req, res) => {
     const productsFilePath = path.join(__dirname, 'data/products.json');
-    
-    // Leer productos desde el archivo JSON
     const products = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
-
-    res.render('home', { products }); // Pasamos los productos a la vista
+    res.render('home', { products });
 });
 
 // Rutas base
@@ -39,10 +36,22 @@ app.use('/api/carts', cartsRouter);
 io.on('connection', (socket) => {
     console.log('🟢 Cliente conectado');
 
-    // Enviar un mensaje de bienvenida al cliente
-    socket.emit('mensaje', 'Bienvenido al servidor de WebSockets');
+    // Función para enviar la lista de productos a todos los clientes
+    const sendProducts = () => {
+        const productsFilePath = path.join(__dirname, 'data/products.json');
+        const products = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
+        io.emit('actualizarProductos', products); // Enviar productos actualizados a todos los clientes
+    };
 
-    // Evento cuando el cliente se desconecta
+    // Escuchar eventos de creación y eliminación de productos
+    socket.on('productoAgregado', () => {
+        sendProducts(); // Enviar lista actualizada
+    });
+
+    socket.on('productoEliminado', () => {
+        sendProducts(); // Enviar lista actualizada
+    });
+
     socket.on('disconnect', () => {
         console.log('🔴 Cliente desconectado');
     });
