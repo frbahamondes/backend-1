@@ -38,7 +38,14 @@ const writeCartsFile = (data) => {
     }
 };
 
-// Ruta para crear un nuevo carrito
+// 📌 Nueva ruta: Obtener todos los carritos
+router.get('/', (req, res) => {
+    console.log('GET /api/carts fue llamado'); // Log de depuración
+    const carts = readCartsFile();
+    res.json(carts);
+});
+
+// 📌 Crear un nuevo carrito
 router.post('/', (req, res) => {
     console.log('POST /api/carts fue llamado'); // Log de depuración
     const carts = readCartsFile();
@@ -56,7 +63,7 @@ router.post('/', (req, res) => {
     res.status(201).json(newCart); // Responder con el carrito creado
 });
 
-// Ruta para listar los productos de un carrito
+// 📌 Obtener productos de un carrito específico
 router.get('/:cid', (req, res) => {
     console.log(`GET /api/carts/${req.params.cid} fue llamado`); // Log de depuración
     const { cid } = req.params;
@@ -69,7 +76,7 @@ router.get('/:cid', (req, res) => {
     res.json(cart.products);
 });
 
-// Ruta para agregar un producto a un carrito
+// 📌 Agregar un producto a un carrito
 router.post('/:cid/product/:pid', (req, res) => {
     console.log(`POST /api/carts/${req.params.cid}/product/${req.params.pid} fue llamado`); // Log de depuración
     const { cid, pid } = req.params;
@@ -85,7 +92,6 @@ router.post('/:cid/product/:pid', (req, res) => {
     const products = readProductsFile();
     console.log('Productos cargados desde products.json:', products);
     const productExists = products.find(p => p.id == Number(pid)); // Comparación débil para evitar problemas de tipo
-    
 
     if (!productExists) {
         console.error(`Producto con ID ${pid} no encontrado`);

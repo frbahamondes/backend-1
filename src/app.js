@@ -21,23 +21,13 @@ app.use(express.urlencoded({ extended: true }));
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Importamos los routers
+// 📌 Importamos los routers
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
+const viewsRouter = require('./routes/views.router'); // 👈 Nuevo router para las vistas
 
-// 📌 Ruta para renderizar la vista home con productos
-app.get('/', (req, res) => {
-    const productsFilePath = path.join(__dirname, 'data/products.json');
-    const products = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
-    res.render('home', { products });
-});
-
-// 📌 Ruta para la vista en tiempo real (MODIFICADA)
-app.get('/realtimeproducts', (req, res) => {
-    const productsFilePath = path.join(__dirname, 'data/products.json');
-    const products = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
-    res.render('realTimeProducts', { products });
-});
+// 📌 Usamos el router de vistas
+app.use('/', viewsRouter); // 👈 Ahora las rutas de vistas están modularizadas
 
 // 📌 Rutas base de API
 app.use('/api/products', productsRouter);
