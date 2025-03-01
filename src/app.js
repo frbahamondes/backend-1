@@ -107,4 +107,4 @@ io.on('connection', (socket) => {
 const PORT = 8080;
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});netstat -ano | findstr :8080
+});

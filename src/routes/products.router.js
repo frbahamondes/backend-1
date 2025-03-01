@@ -1,114 +1,118 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-
+const mongoosePaginate = require('mongoose-paginate-v2'); // 📌 Asegurar que el plugin esté cargado
+const Product = require('../models/product.model'); // Importamos el modelo de productos
 const router = express.Router();
-const productsFilePath = path.join(__dirname, '../data/products.json');
 
-// Función para leer el archivo JSON
-const readProductsFile = () => {
+// 📌 Obtener todos los productos con filtros opcionales (limit, page, sort, query)
+router.get('/', async (req, res) => {
     try {
-        const data = fs.readFileSync(productsFilePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error('Error al leer el archivo products.json:', err);
-        return [];
-    }
-};
+        console.log('GET /api/products fue llamado');
+        const { limit = 10, page = 1, sort, query } = req.query;
 
-// Función para escribir en el archivo JSON
-const writeProductsFile = (data) => {
+        // Creamos un objeto de filtro según query param (por ejemplo, filtrar por categoría o disponibilidad)
+        let filter = {};
+        if (query) {
+            filter = { $or: [{ category: query }, { status: query === 'true' }] };
+        }
+
+        // Creamos opciones para paginación y ordenamiento
+        let options = {
+            limit: parseInt(limit),
+            page: parseInt(page),
+            sort: sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {},
+        };
+
+        // Usamos `paginate()` de Mongoose (necesita `mongoose-paginate-v2`)
+        const products = await Product.paginate(filter, options);
+
+        res.json({
+            status: 'success',
+            payload: products.docs, // Lista de productos
+            totalPages: products.totalPages,
+            prevPage: products.prevPage,
+            nextPage: products.nextPage,
+            page: products.page,
+            hasPrevPage: products.hasPrevPage,
+            hasNextPage: products.hasNextPage,
+            prevLink: products.hasPrevPage ? `/api/products?page=${products.prevPage}` : null,
+            nextLink: products.hasNextPage ? `/api/products?page=${products.nextPage}` : null,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener los productos', message: error.message });
+    }
+});
+
+// 📌 Obtener un producto por ID
+router.get('/:pid', async (req, res) => {
     try {
-        fs.writeFileSync(productsFilePath, JSON.stringify(data, null, 2));
-    } catch (err) {
-        console.error('Error al escribir en el archivo products.json:', err);
-    }
-};
+        console.log(`GET /api/products/${req.params.pid} fue llamado`);
+        const product = await Product.findById(req.params.pid);
 
-// 📌 Ruta para listar todos los productos
-router.get('/', (req, res) => {
-    console.log('GET /api/products fue llamado');
-    const limit = req.query.limit;
-    const data = readProductsFile();
-    const products = limit ? data.slice(0, limit) : data;
-    res.json(products);
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener el producto', message: error.message });
+    }
 });
 
-// 📌 Ruta para obtener un producto por ID
-router.get('/:pid', (req, res) => {
-    const { pid } = req.params;
-    console.log(`GET /api/products/${pid} fue llamado`);
+// 📌 Agregar un nuevo producto
+router.post('/', async (req, res) => {
+    try {
+        console.log('POST /api/products fue llamado');
+        const { title, description, price, code, category, stock, status, thumbnails } = req.body;
 
-    const data = readProductsFile();
-    const product = data.find(p => p.id == pid);
+        if (!title || !price || !code) {
+            return res.status(400).json({ error: 'Faltan campos obligatorios (title, price, code)' });
+        }
 
-    if (!product) {
-        return res.status(404).json({ error: 'Producto no encontrado' });
+        const newProduct = new Product({
+            title,
+            description,
+            price,
+            code,
+            category,
+            stock,
+            status,
+            thumbnails,
+        });
+
+        await newProduct.save();
+        res.status(201).json(newProduct);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al agregar el producto', message: error.message });
     }
-    res.json(product);
 });
 
-// 📌 Ruta para agregar un nuevo producto
-router.post('/', (req, res) => {
-    console.log('POST /api/products fue llamado');
-    const data = readProductsFile();
-    const newProduct = req.body;
+// 📌 Actualizar un producto por ID
+router.put('/:pid', async (req, res) => {
+    try {
+        console.log(`PUT /api/products/${req.params.pid} fue llamado`);
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true });
 
-    // Validar que el body contiene los campos obligatorios
-    if (!newProduct.title || !newProduct.price || !newProduct.code) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios (title, price, code)' });
+        if (!updatedProduct) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar el producto', message: error.message });
     }
-
-    // Autogenerar un ID único
-    const newId = data.length > 0 ? data[data.length - 1].id + 1 : 1;
-
-    // Asignar valores por defecto si no están presentes
-    const productWithDefaults = {
-        id: newId,
-        title: newProduct.title,
-        description: newProduct.description || "Sin descripción",
-        price: newProduct.price,
-        code: newProduct.code,
-        category: newProduct.category || "Sin categoría",
-        stock: newProduct.stock || 10,
-        status: newProduct.status !== undefined ? newProduct.status : true
-    };
-
-    data.push(productWithDefaults);
-    writeProductsFile(data);
-    res.status(201).json(productWithDefaults);
 });
 
-// 📌 Ruta para actualizar un producto por ID
-router.put('/:pid', (req, res) => {
-    console.log(`PUT /api/products/${req.params.pid} fue llamado`);
-    const { pid } = req.params;
-    const data = readProductsFile();
-    const updatedProduct = req.body;
+// 📌 Eliminar un producto por ID
+router.delete('/:pid', async (req, res) => {
+    try {
+        console.log(`DELETE /api/products/${req.params.pid} fue llamado`);
+        const deletedProduct = await Product.findByIdAndDelete(req.params.pid);
 
-    const productIndex = data.findIndex(p => p.id == pid);
-    if (productIndex === -1) {
-        return res.status(404).json({ error: 'Producto no encontrado' });
+        if (!deletedProduct) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar el producto', message: error.message });
     }
-
-    data[productIndex] = { ...data[productIndex], ...updatedProduct, id: data[productIndex].id };
-    writeProductsFile(data);
-    res.json(data[productIndex]);
-});
-
-// 📌 Ruta para eliminar un producto por ID
-router.delete('/:pid', (req, res) => {
-    console.log(`DELETE /api/products/${req.params.pid} fue llamado`);
-    const { pid } = req.params;
-    const data = readProductsFile();
-
-    const newData = data.filter(p => p.id != pid);
-    if (newData.length === data.length) {
-        return res.status(404).json({ error: 'Producto no encontrado' });
-    }
-
-    writeProductsFile(newData);
-    res.status(204).send();
 });
 
 module.exports = router;
