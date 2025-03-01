@@ -1,39 +1,50 @@
+// 🔹 Importaciones necesarias
+require('dotenv').config(); // Cargar variables de entorno
 const express = require('express');
 const { engine } = require('express-handlebars');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
+const mongoose = require('mongoose'); // 🔹 Importamos Mongoose
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Configurar Handlebars como motor de plantillas
+// 🔹 Conectar a MongoDB Atlas (CORREGIDO)
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('🟢 Conectado a MongoDB Atlas'))
+.catch(error => console.error('🔴 Error conectando a MongoDB:', error));
+
+// 🔹 Configurar Handlebars como motor de plantillas
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware para manejar JSON y archivos estáticos
+// 🔹 Middleware para manejar JSON y archivos estáticos
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde la carpeta 'public'
+// 🔹 Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 📌 Importamos los routers
+// 🔹 Importamos los routers
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
-const viewsRouter = require('./routes/views.router'); // 👈 Nuevo router para las vistas
+const viewsRouter = require('./routes/views.router'); 
 
-// 📌 Usamos el router de vistas
-app.use('/', viewsRouter); // 👈 Ahora las rutas de vistas están modularizadas
+// 🔹 Usamos el router de vistas
+app.use('/', viewsRouter); 
 
-// 📌 Rutas base de API
+// 🔹 Rutas base de API
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 
-// 📌 Configuración de WebSockets
+// 🔹 Configuración de WebSockets
 io.on('connection', (socket) => {
     console.log('🟢 Cliente conectado');
 
@@ -92,8 +103,8 @@ io.on('connection', (socket) => {
     });
 });
 
-// 📌 Configuración del puerto
+// 🔹 Configuración del puerto
 const PORT = 8080;
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+});netstat -ano | findstr :8080
