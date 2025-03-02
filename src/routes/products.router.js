@@ -52,18 +52,20 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 📌 Obtener un producto por ID
+// 📌 Nueva Ruta: Obtener un producto y renderizar la vista detallada
 router.get('/:pid', async (req, res) => {
     try {
-        console.log(`GET /api/products/${req.params.pid} fue llamado`);
-        const product = await Product.findById(req.params.pid);
+        console.log(`GET /products/${req.params.pid} fue llamado`);
+        const product = await Product.findById(req.params.pid).lean();
 
         if (!product) {
-            return res.status(404).json({ error: '❌ Producto no encontrado' });
+            return res.status(404).send("❌ Producto no encontrado");
         }
-        res.json(product);
+
+        res.render('productDetail', { product }); // 📌 Renderizamos la vista con el producto
     } catch (error) {
-        res.status(500).json({ error: '❌ Error al obtener el producto', message: error.message });
+        console.error('❌ Error al obtener el producto:', error);
+        res.status(500).send('❌ Error al cargar el producto');
     }
 });
 

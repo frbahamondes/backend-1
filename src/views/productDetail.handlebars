@@ -1,0 +1,18 @@
+{{!-- productDetail.handlebars --}}
+
+<h1>Detalles del Producto</h1>
+
+<div class="product-detail">
+    <h2>{{product.title}}</h2>
+    <p><strong>Descripción:</strong> {{product.description}}</p>
+    <p><strong>Precio:</strong> ${{product.price}}</p>
+    <p><strong>Categoría:</strong> {{product.category}}</p>
+    <p><strong>Stock disponible:</strong> {{product.stock}}</p>
+    <p><strong>Estado:</strong> {{#if product.status}}✅ Disponible{{else}}❌ No disponible{{/if}}</p>
+
+    <button id="addToCart" class="add-btn" data-id="{{product._id}}">🛒 Agregar al carrito</button>
+</div>
+
+<a href="/products">⬅ Volver a Productos</a>
+
+<script src="/js/productDetail.js"></script>
