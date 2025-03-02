@@ -1,6 +1,6 @@
 console.log('📌 Script products.js cargado correctamente');
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     let cartId = localStorage.getItem('cartId'); // 🛒 Intentar obtener el ID del carrito guardado
 
     // ✅ Función para crear un carrito si no existe
@@ -12,9 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartId = data._id; // Guardar el nuevo carrito
                 localStorage.setItem('cartId', cartId); // 📌 Guardar en localStorage
                 console.log('🛒 Nuevo carrito creado:', cartId);
+
+                // ✅ Actualizar enlace del carrito en la UI
+                updateCartLink(cartId);
             } catch (error) {
                 console.error('❌ Error al crear carrito:', error);
             }
+        }
+    };
+
+    // ✅ Función para actualizar el enlace "Ver mi carrito"
+    const updateCartLink = (cartId) => {
+        const cartLink = document.getElementById('cart-link');
+        if (cartLink) {
+            cartLink.href = `/carts/${cartId}`;
         }
     };
 
@@ -45,13 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ✅ Asignar eventos a botones "Agregar al carrito" y "Ver detalles"
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', () => addToCart(button.dataset.id));
-    });
+    const assignEventListeners = () => {
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', () => addToCart(button.dataset.id));
+        });
 
-    document.querySelectorAll('.view-details').forEach(button => {
-        button.addEventListener('click', () => goToProductDetails(button.dataset.id));
-    });
+        document.querySelectorAll('.view-details').forEach(button => {
+            button.addEventListener('click', () => goToProductDetails(button.dataset.id));
+        });
+    };
+
+    assignEventListeners(); // Asignar eventos al cargar la página
 
     // ✅ Aplicar filtros y ordenamiento
     document.getElementById("applyFilters").addEventListener("click", async () => {
@@ -84,22 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Precio:</strong> $${product.price}</p>
                         <p><strong>Categoría:</strong> ${product.category}</p>
                         <p>${product.description}</p>
-                        <button class="view-details" data-id="${product._id}">Ver detalles</button>
-                        <button class="add-to-cart" data-id="${product._id}">Agregar al carrito</button>
+                        <button class="view-details add-btn" data-id="${product._id}">Ver detalles</button>
+                        <button class="add-to-cart add-btn" data-id="${product._id}">Agregar al carrito</button>
                     `;
 
                     productList.appendChild(productCard);
                 });
 
-                // ✅ Reasignar eventos a los nuevos botones
-                document.querySelectorAll('.add-to-cart').forEach(button => {
-                    button.addEventListener('click', () => addToCart(button.dataset.id));
-                });
-
-                document.querySelectorAll('.view-details').forEach(button => {
-                    button.addEventListener('click', () => goToProductDetails(button.dataset.id));
-                });
-
+                assignEventListeners(); // ✅ Reasignar eventos a los nuevos botones
             } else {
                 console.error("❌ Error al obtener productos:", data.error);
             }
@@ -109,5 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ✅ Crear carrito si no existe
-    createCartIfNeeded();
+    await createCartIfNeeded();
+
+    // ✅ Asegurar que el botón "Ver mi carrito" tenga el ID correcto
+    updateCartLink(cartId);
 });

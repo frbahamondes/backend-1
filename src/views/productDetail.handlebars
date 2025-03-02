@@ -2,6 +2,11 @@
 
 <h1>Detalles del Producto</h1>
 
+<!-- 🛒 Botón para ver el carrito -->
+<div class="cart-container">
+    <a id="cart-link" href="#" class="cart-btn">🛒 Ver mi carrito</a>
+</div>
+
 <div class="product-detail">
     <h2>{{product.title}}</h2>
     <p><strong>Descripción:</strong> {{product.description}}</p>
@@ -16,3 +21,19 @@
 <a href="/products">⬅ Volver a Productos</a>
 
 <script src="/js/productDetail.js"></script>
+
+<script>
+    // ✅ Actualizar enlace del carrito con el ID almacenado
+    document.addEventListener("DOMContentLoaded", () => {
+        const cartId = localStorage.getItem("cartId");
+        const cartLink = document.getElementById("cart-link");
+
+        if (cartId) {
+            cartLink.href = `/carts/${cartId}`;
+        } else {
+            cartLink.href = "#";
+            cartLink.style.pointerEvents = "none";
+            cartLink.style.opacity = "0.5";
+        }
+    });
+</script>

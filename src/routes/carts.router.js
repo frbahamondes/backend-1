@@ -75,21 +75,25 @@ router.post('/:cid/product/:pid', async (req, res) => {
     }
 });
 
-// 📌 Eliminar un producto específico de un carrito
+// 📌 🚀 Eliminar un producto específico de un carrito (MEJORADO con $pull)
 router.delete('/:cid/products/:pid', async (req, res) => {
     try {
         console.log(`DELETE /api/carts/${req.params.cid}/products/${req.params.pid} fue llamado`);
         const { cid, pid } = req.params;
 
         const cart = await Cart.findById(cid);
-        if (!cart) return res.status(404).json({ error: 'Carrito no encontrado' });
+        if (!cart) return res.status(404).json({ error: '❌ Carrito no encontrado' });
 
-        cart.products = cart.products.filter(p => p.product.toString() !== pid);
+        // ✅ Usamos $pull para eliminar el producto correctamente en MongoDB
+        await Cart.updateOne({ _id: cid }, { $pull: { products: { product: pid } } });
 
-        await cart.save();
-        res.json({ message: '❌ Producto eliminado del carrito', cart });
+        // 📌 Buscamos el carrito actualizado después de la eliminación
+        const updatedCart = await Cart.findById(cid).populate('products.product');
+
+        res.json({ message: '✅ Producto eliminado del carrito', cart: updatedCart });
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar el producto del carrito', message: error.message });
+        console.error('❌ Error al eliminar el producto del carrito:', error);
+        res.status(500).json({ error: '❌ Error al eliminar el producto del carrito', message: error.message });
     }
 });
 
@@ -101,7 +105,7 @@ router.delete('/:cid', async (req, res) => {
 
         // 📌 Buscar el carrito
         let cart = await Cart.findById(cid);
-        if (!cart) return res.status(404).json({ error: 'Carrito no encontrado' });
+        if (!cart) return res.status(404).json({ error: '❌ Carrito no encontrado' });
 
         // 📌 Vaciar los productos sin eliminar el carrito
         cart.products = [];
@@ -109,7 +113,7 @@ router.delete('/:cid', async (req, res) => {
 
         res.json({ message: '🗑 Carrito vaciado correctamente' });
     } catch (error) {
-        res.status(500).json({ error: 'Error al vaciar el carrito', message: error.message });
+        res.status(500).json({ error: '❌ Error al vaciar el carrito', message: error.message });
     }
 });
 
