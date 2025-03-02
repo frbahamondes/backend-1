@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Productos en Tiempo Real</title>
-    <link rel="stylesheet" href="/css/styles.css"> <!-- 🔗 Enlace a la hoja de estilos corregido -->
+    <link rel="stylesheet" href="/css/styles.css"> <!-- 🔗 Enlace a la hoja de estilos -->
 </head>
 <body>
     <h1>Lista de Productos en Tiempo Real</h1>
@@ -12,13 +12,13 @@
     <!-- Contenedor donde se mostrarán los productos -->
     <div id="product-list" class="product-container">
         {{#each products}}
-            <div class="product-card" id="product-{{id}}">
+            <div class="product-card" id="product-{{_id}}">
                 <strong>{{title}}</strong> - ${{price}}
                 <p>{{description}}</p>
                 <p><strong>Categoría:</strong> {{category}}</p>
                 <p><strong>Stock:</strong> {{stock}} unidades</p>
                 <p><strong>Estado:</strong> {{#if status}}✅ Disponible{{else}}❌ No disponible{{/if}}</p>
-                <button class="delete-btn" onclick="eliminarProducto('{{id}}')">🗑 Eliminar</button>
+                <button class="delete-btn" onclick="eliminarProducto('{{_id}}')">🗑 Eliminar</button>
             </div>
         {{/each}}
     </div>
@@ -57,51 +57,91 @@
         const socket = io();
         const productList = document.getElementById('product-list');
 
-        // Enviar producto al servidor cuando se envía el formulario
-        document.getElementById('product-form').addEventListener('submit', function (e) {
+        // ✅ Función para obtener productos desde MongoDB
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+                
+                productList.innerHTML = ''; // Limpiar la lista antes de actualizarla
+
+                data.payload.forEach(product => {
+                    const div = document.createElement('div');
+                    div.classList.add('product-card');
+                    div.id = `product-${product._id}`;
+                    div.innerHTML = `
+                        <strong>${product.title}</strong> - $${product.price}
+                        <p>${product.description}</p>
+                        <p><strong>Categoría:</strong> ${product.category}</p>
+                        <p><strong>Stock:</strong> ${product.stock} unidades</p>
+                        <p><strong>Estado:</strong> ${product.status ? "✅ Disponible" : "❌ No disponible"}</p>
+                        <button class="delete-btn" onclick="eliminarProducto('${product._id}')">🗑 Eliminar</button>
+                    `;
+                    productList.appendChild(div);
+                });
+            } catch (error) {
+                console.error('❌ Error al cargar productos:', error);
+            }
+        }
+
+        // ✅ Enviar producto al servidor cuando se envía el formulario
+        document.getElementById('product-form').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             const product = {
                 title: document.getElementById('title').value,
                 description: document.getElementById('description').value,
-                price: document.getElementById('price').value,
+                price: parseFloat(document.getElementById('price').value),
                 code: document.getElementById('code').value,
                 category: document.getElementById('category').value,
-                stock: document.getElementById('stock').value || 10,
+                stock: parseInt(document.getElementById('stock').value) || 10,
                 status: document.getElementById('status').checked
             };
 
-            socket.emit('agregarProducto', product); // Enviamos el producto al servidor
-            document.getElementById('product-form').reset(); // Limpiar formulario
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product)
+                });
+
+                if (response.ok) {
+                    socket.emit('agregarProducto', product); // Emitir evento WebSocket
+                    cargarProductos(); // Recargar productos desde la API
+                    document.getElementById('product-form').reset();
+                } else {
+                    console.error('❌ Error al agregar producto');
+                }
+            } catch (error) {
+                console.error('❌ Error al agregar producto:', error);
+            }
         });
 
-        // Escuchar eventos de actualización de productos
-        socket.on('actualizarProductos', (products) => {
-            productList.innerHTML = ''; // Limpiar la lista antes de actualizarla
-
-            products.forEach(product => {
-                const div = document.createElement('div');
-                div.classList.add('product-card');
-                div.id = `product-${product.id}`;
-                div.innerHTML = `
-                    <strong>${product.title}</strong> - $${product.price}
-                    <p>${product.description}</p>
-                    <p><strong>Categoría:</strong> ${product.category}</p>
-                    <p><strong>Stock:</strong> ${product.stock} unidades</p>
-                    <p><strong>Estado:</strong> ${product.status ? "✅ Disponible" : "❌ No disponible"}</p>
-                    <button class="delete-btn" onclick="eliminarProducto('${product.id}')">🗑 Eliminar</button>
-                `;
-                productList.appendChild(div);
-            });
+        // ✅ Escuchar eventos de actualización de productos en tiempo real
+        socket.on('actualizarProductos', () => {
+            cargarProductos();
         });
 
-        // Enviar evento para eliminar producto
-        function eliminarProducto(id) {
-            socket.emit('eliminarProducto', id);
+        // ✅ Enviar evento para eliminar producto
+        async function eliminarProducto(id) {
+            try {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    socket.emit('eliminarProducto', id); // Emitir evento WebSocket
+                    cargarProductos(); // Recargar productos desde la API
+                } else {
+                    console.error('❌ Error al eliminar producto');
+                }
+            } catch (error) {
+                console.error('❌ Error al eliminar producto:', error);
+            }
         }
 
-        // 🟢 Emitir un evento para cargar los productos iniciales cuando la página se carga
-        socket.emit('solicitarProductos');
+        // 🔄 Cargar productos al iniciar la página
+        cargarProductos();
     </script>
 </body>
 </html>

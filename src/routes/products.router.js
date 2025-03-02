@@ -1,6 +1,5 @@
 const express = require('express');
-const mongoosePaginate = require('mongoose-paginate-v2'); // 📌 Asegurar que el plugin esté cargado
-const Product = require('../models/product.model'); // Importamos el modelo de productos
+const Product = require('../models/product.model'); // 📌 Importamos el modelo de productos
 const router = express.Router();
 
 // 📌 Obtener todos los productos con filtros opcionales (limit, page, sort, query)
@@ -9,21 +8,32 @@ router.get('/', async (req, res) => {
         console.log('GET /api/products fue llamado');
         const { limit = 10, page = 1, sort, query } = req.query;
 
-        // Creamos un objeto de filtro según query param (por ejemplo, filtrar por categoría o disponibilidad)
+        // 📌 Creación de filtros para búsqueda
         let filter = {};
         if (query) {
-            filter = { $or: [{ category: query }, { status: query === 'true' }] };
+            filter.category = query; // Filtra por categoría exacta
         }
 
-        // Creamos opciones para paginación y ordenamiento
-        let options = {
+        // 📌 Configuración de ordenamiento
+        let sortOption = {};
+        if (sort === 'asc') sortOption.price = 1;
+        if (sort === 'desc') sortOption.price = -1;
+
+        // 📌 Configuración de paginación
+        const options = {
             limit: parseInt(limit),
             page: parseInt(page),
-            sort: sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {},
+            sort: sortOption,
+            lean: true, // Permite devolver datos en formato JSON plano para Handlebars
         };
 
-        // Usamos `paginate()` de Mongoose (necesita `mongoose-paginate-v2`)
+        // 📌 Obtener productos paginados con filtros
         const products = await Product.paginate(filter, options);
+
+        // 📌 Construcción de enlaces de paginación con filtros y ordenamiento
+        const queryParams = new URLSearchParams({ limit, sort, query }).toString();
+        const prevLink = products.hasPrevPage ? `/api/products?page=${products.prevPage}&${queryParams}` : null;
+        const nextLink = products.hasNextPage ? `/api/products?page=${products.nextPage}&${queryParams}` : null;
 
         res.json({
             status: 'success',
@@ -34,11 +44,11 @@ router.get('/', async (req, res) => {
             page: products.page,
             hasPrevPage: products.hasPrevPage,
             hasNextPage: products.hasNextPage,
-            prevLink: products.hasPrevPage ? `/api/products?page=${products.prevPage}` : null,
-            nextLink: products.hasNextPage ? `/api/products?page=${products.nextPage}` : null,
+            prevLink,
+            nextLink
         });
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener los productos', message: error.message });
+        res.status(500).json({ error: '❌ Error al obtener los productos', message: error.message });
     }
 });
 
@@ -49,22 +59,23 @@ router.get('/:pid', async (req, res) => {
         const product = await Product.findById(req.params.pid);
 
         if (!product) {
-            return res.status(404).json({ error: 'Producto no encontrado' });
+            return res.status(404).json({ error: '❌ Producto no encontrado' });
         }
         res.json(product);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener el producto', message: error.message });
+        res.status(500).json({ error: '❌ Error al obtener el producto', message: error.message });
     }
 });
 
-// 📌 Agregar un nuevo producto
+// 📌 Agregar un nuevo producto a MongoDB
 router.post('/', async (req, res) => {
     try {
         console.log('POST /api/products fue llamado');
         const { title, description, price, code, category, stock, status, thumbnails } = req.body;
 
-        if (!title || !price || !code) {
-            return res.status(400).json({ error: 'Faltan campos obligatorios (title, price, code)' });
+        // 📌 Validación de campos obligatorios
+        if (!title || !price || !code || !category || stock === undefined) {
+            return res.status(400).json({ error: '❌ Faltan campos obligatorios (title, price, code, category, stock)' });
         }
 
         const newProduct = new Product({
@@ -74,14 +85,14 @@ router.post('/', async (req, res) => {
             code,
             category,
             stock,
-            status,
-            thumbnails,
+            status: status !== undefined ? status : true, // Si no se envía, por defecto es true
+            thumbnails
         });
 
         await newProduct.save();
-        res.status(201).json(newProduct);
+        res.status(201).json({ message: '✅ Producto agregado con éxito', product: newProduct });
     } catch (error) {
-        res.status(500).json({ error: 'Error al agregar el producto', message: error.message });
+        res.status(500).json({ error: '❌ Error al agregar el producto', message: error.message });
     }
 });
 
@@ -92,11 +103,11 @@ router.put('/:pid', async (req, res) => {
         const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true });
 
         if (!updatedProduct) {
-            return res.status(404).json({ error: 'Producto no encontrado' });
+            return res.status(404).json({ error: '❌ Producto no encontrado' });
         }
-        res.json(updatedProduct);
+        res.json({ message: '✅ Producto actualizado', product: updatedProduct });
     } catch (error) {
-        res.status(500).json({ error: 'Error al actualizar el producto', message: error.message });
+        res.status(500).json({ error: '❌ Error al actualizar el producto', message: error.message });
     }
 });
 
@@ -107,11 +118,11 @@ router.delete('/:pid', async (req, res) => {
         const deletedProduct = await Product.findByIdAndDelete(req.params.pid);
 
         if (!deletedProduct) {
-            return res.status(404).json({ error: 'Producto no encontrado' });
+            return res.status(404).json({ error: '❌ Producto no encontrado' });
         }
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar el producto', message: error.message });
+        res.status(500).json({ error: '❌ Error al eliminar el producto', message: error.message });
     }
 });
 

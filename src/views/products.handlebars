@@ -7,9 +7,9 @@
     <select id="category">
         <option value="">Todas</option>
         <option value="Tecnología">Tecnología</option>
-        <option value="Accesorios">Accesorios</option>
         <option value="Electrodomésticos">Electrodomésticos</option>
-        <option value="Otros">Otros</option>
+        <option value="Hogar">Hogar</option>
+        <option value="Ropa">Ropa</option>
     </select>
 
     <label for="sort">Ordenar por precio:</label>
@@ -19,29 +19,29 @@
         <option value="desc">Mayor a menor</option>
     </select>
 
-    <button id="applyFilters">Aplicar filtros</button>
+    <button class="add-btn" id="applyFilters">Aplicar filtros</button>
 </div>
 
-<div id="product-list">
+<div id="product-list" class="product-container">
     {{#each products}}
-    <div class="product-card">
-        <h3>{{this.title}}</h3>
-        <p>Precio: ${{this.price}}</p>
-        <p>Categoría: {{this.category}}</p>
-        <p>{{this.description}}</p>
-        <button class="view-details" data-id="{{this._id}}">Ver detalles</button>
-        <button class="add-to-cart" data-product-id="{{this._id}}">Agregar al carrito</button>
-    </div>
+        <div class="product-card">
+            <h3>{{this.title}}</h3>
+            <p><strong>Precio:</strong> ${{this.price}}</p>
+            <p><strong>Categoría:</strong> {{this.category}}</p>
+            <p>{{this.description}}</p>
+            <button class="view-details add-btn" data-id="{{this._id}}">Ver detalles</button>
+            <button class="add-to-cart add-btn" data-id="{{this._id}}">Agregar al carrito</button>
+        </div>
     {{/each}}
 </div>
 
 <div class="pagination">
     {{#if hasPrevPage}}
-    <a href="{{prevLink}}">Anterior</a>
+        <a href="{{prevLink}}" class="add-btn">Anterior</a>
     {{/if}}
     <span>Página {{page}} de {{totalPages}}</span>
     {{#if hasNextPage}}
-    <a href="{{nextLink}}">Siguiente</a>
+        <a href="{{nextLink}}" class="add-btn">Siguiente</a>
     {{/if}}
 </div>
 

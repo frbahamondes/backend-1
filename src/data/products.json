@@ -29,5 +29,41 @@
     "category": "Tecnología",
     "stock": "1",
     "status": true
+  },
+  {
+    "id": 5,
+    "title": "Mouse HP",
+    "description": "Mouse de la conocida marca de computadoras HP, sácale el máximo rendimiento a tu compu.",
+    "price": "95",
+    "category": "Accesorios",
+    "stock": "5",
+    "status": true
+  },
+  {
+    "id": 6,
+    "title": "Mouse HP",
+    "description": "Prueba el nuevo mouse gamer de HP",
+    "price": "95",
+    "category": "Accesorios",
+    "stock": "10",
+    "status": true
+  },
+  {
+    "id": 7,
+    "title": "Mouse HP",
+    "description": "Prueba el nuevo mouse gamer de HP",
+    "price": "95",
+    "category": "Tecnología",
+    "stock": "10",
+    "status": true
+  },
+  {
+    "id": 8,
+    "title": "Mouse HP",
+    "description": "Prueba el nuevo mouse gamer de HP, es ergonómico.",
+    "price": 95,
+    "category": "Accesorios",
+    "stock": 6,
+    "status": true
   }
 ]

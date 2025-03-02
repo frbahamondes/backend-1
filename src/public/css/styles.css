@@ -126,3 +126,40 @@ h2 {
 .add-btn:hover {
     background: #218838;
 }
+
+/* 🎨 Estilos para la vista de filtros */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filters label {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* 🎨 Estilos para paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: white;
+    padding: 8px 12px;
+    background: #007bff;
+    border-radius: 5px;
+}
+
+.pagination a:hover {
+    background: #0056b3;
+}
