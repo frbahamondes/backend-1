@@ -1,5 +1,6 @@
 const express = require('express');
 const Product = require('../models/product.model'); // 📌 Importamos el modelo de productos
+const Cart = require('../models/cart.model'); // 📌 Importamos el modelo de carritos
 const router = express.Router();
 
 // 📌 Ruta para renderizar la vista principal
@@ -52,7 +53,7 @@ router.get('/products', async (req, res) => {
     }
 });
 
-// 📌 🚀 NUEVA RUTA PARA MOSTRAR DETALLES DE UN PRODUCTO
+// 📌 🚀 Ruta para mostrar detalles de un producto
 router.get('/products/:pid', async (req, res) => {
     try {
         console.log(`🔍 Buscando producto con ID: ${req.params.pid}`);
@@ -68,6 +69,26 @@ router.get('/products/:pid', async (req, res) => {
     } catch (error) {
         console.error('❌ Error al obtener producto:', error);
         res.status(500).send('Error al cargar el producto');
+    }
+});
+
+// 📌 🚀 NUEVA RUTA: Mostrar un carrito específico en la vista 🛒
+router.get('/carts/:cid', async (req, res) => {
+    try {
+        console.log(`🛒 Buscando carrito con ID: ${req.params.cid}`);
+
+        // 📌 Buscamos el carrito y obtenemos los detalles de los productos con populate()
+        const cart = await Cart.findById(req.params.cid).populate('products.product').lean();
+
+        if (!cart) {
+            console.error('❌ Carrito no encontrado');
+            return res.status(404).send('Carrito no encontrado');
+        }
+
+        res.render('carts', { cart });
+    } catch (error) {
+        console.error('❌ Error al obtener el carrito:', error);
+        res.status(500).send('Error al cargar el carrito');
     }
 });
 

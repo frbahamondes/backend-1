@@ -1,0 +1,23 @@
+{{!-- 🛒 Vista del carrito --}}
+
+<h1>Carrito de Compras</h1>
+
+{{#if cart.products.length}}
+    <div class="cart-container">
+        {{#each cart.products}}
+            <div class="cart-item">
+                <h3>{{this.product.title}}</h3>
+                <p><strong>Precio:</strong> ${{this.product.price}}</p>
+                <p><strong>Cantidad:</strong> {{this.quantity}}</p>
+                <button class="remove-from-cart" data-id="{{this.product._id}}">❌ Eliminar</button>
+            </div>
+        {{/each}}
+    </div>
+    <button id="empty-cart">🗑 Vaciar Carrito</button>
+{{else}}
+    <p>🛒 Tu carrito está vacío.</p>
+{{/if}}
+
+<a href="/products">🔙 Volver a Productos</a>
+
+<script src="/js/cart.js"></script>

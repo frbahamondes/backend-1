@@ -2,14 +2,19 @@
 
 <h1>Lista de Productos</h1>
 
+<!-- 🛒 Botón para ver el carrito (ID dinámico) -->
+<div class="cart-container">
+    <a id="cart-link" href="#" class="cart-btn">🛒 Ver mi carrito</a>
+</div>
+
 <div class="filters">
     <label for="category">Filtrar por categoría:</label>
     <select id="category">
         <option value="">Todas</option>
         <option value="Tecnología">Tecnología</option>
         <option value="Electrodomésticos">Electrodomésticos</option>
-        <option value="Hogar">Hogar</option>
-        <option value="Ropa">Ropa</option>
+        <option value="Accesorios">Accesorios</option>
+        <option value="Otros">Otros</option>
     </select>
 
     <label for="sort">Ordenar por precio:</label>
@@ -24,25 +29,41 @@
 
 <div id="product-list" class="product-container">
     {{#each products}}
-        <div class="product-card">
-            <h3>{{this.title}}</h3>
-            <p><strong>Precio:</strong> ${{this.price}}</p>
-            <p><strong>Categoría:</strong> {{this.category}}</p>
-            <p>{{this.description}}</p>
-            <button class="view-details add-btn" data-id="{{this._id}}">Ver detalles</button>
-            <button class="add-to-cart add-btn" data-id="{{this._id}}">Agregar al carrito</button>
-        </div>
+    <div class="product-card">
+        <h3>{{this.title}}</h3>
+        <p><strong>Precio:</strong> ${{this.price}}</p>
+        <p><strong>Categoría:</strong> {{this.category}}</p>
+        <p>{{this.description}}</p>
+        <button class="view-details add-btn" data-id="{{this._id}}">Ver detalles</button>
+        <button class="add-to-cart add-btn" data-id="{{this._id}}">Agregar al carrito</button>
+    </div>
     {{/each}}
 </div>
 
 <div class="pagination">
     {{#if hasPrevPage}}
-        <a href="{{prevLink}}" class="add-btn">Anterior</a>
+    <a href="{{prevLink}}" class="add-btn">Anterior</a>
     {{/if}}
     <span>Página {{page}} de {{totalPages}}</span>
     {{#if hasNextPage}}
-        <a href="{{nextLink}}" class="add-btn">Siguiente</a>
+    <a href="{{nextLink}}" class="add-btn">Siguiente</a>
     {{/if}}
 </div>
 
 <script src="/js/products.js"></script>
+
+<script>
+    // ✅ Asignar el ID del carrito dinámicamente al botón "Ver mi carrito"
+    document.addEventListener("DOMContentLoaded", () => {
+        const cartId = localStorage.getItem("cartId"); // Obtener el carrito guardado
+        const cartLink = document.getElementById("cart-link");
+
+        if (cartId) {
+            cartLink.href = `/carts/${cartId}`; // Si hay carrito, actualiza el enlace
+        } else {
+            cartLink.href = "#"; // Si no hay carrito, deshabilita el enlace
+            cartLink.style.pointerEvents = "none";
+            cartLink.style.opacity = "0.5";
+        }
+    });
+</script>

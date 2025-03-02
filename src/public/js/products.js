@@ -1,10 +1,27 @@
 console.log('📌 Script products.js cargado correctamente');
 
 document.addEventListener('DOMContentLoaded', () => {
-    const cartId = '67c385651f8d0d56e95aee31'; // ⚠️ Asegúrate de usar un carrito válido
+    let cartId = localStorage.getItem('cartId'); // 🛒 Intentar obtener el ID del carrito guardado
+
+    // ✅ Función para crear un carrito si no existe
+    const createCartIfNeeded = async () => {
+        if (!cartId) {
+            try {
+                const response = await fetch('/api/carts', { method: 'POST' });
+                const data = await response.json();
+                cartId = data._id; // Guardar el nuevo carrito
+                localStorage.setItem('cartId', cartId); // 📌 Guardar en localStorage
+                console.log('🛒 Nuevo carrito creado:', cartId);
+            } catch (error) {
+                console.error('❌ Error al crear carrito:', error);
+            }
+        }
+    };
 
     // ✅ Función para agregar productos al carrito
     const addToCart = async (productId) => {
+        await createCartIfNeeded(); // Asegurar que el carrito existe antes de agregar productos
+
         try {
             const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
                 method: 'POST',
@@ -44,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let url = "/api/products?"; // Base URL
 
         if (category) {
-            url += `query=${category}`; // 🛠️ Corrección aquí
+            url += `query=${category}`;
         }
 
         if (sort) {
@@ -90,4 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("❌ Error al aplicar filtros:", error);
         }
     });
+
+    // ✅ Crear carrito si no existe
+    createCartIfNeeded();
 });

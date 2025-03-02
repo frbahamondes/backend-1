@@ -65,5 +65,14 @@
     "category": "Accesorios",
     "stock": 6,
     "status": true
+  },
+  {
+    "id": 9,
+    "title": "Mouse Razer",
+    "description": "El clásico Mouse Gamer",
+    "price": 200,
+    "category": "Accesorios",
+    "stock": 8,
+    "status": true
   }
 ]
