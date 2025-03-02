@@ -5,7 +5,7 @@ const router = express.Router();
 // 📌 Ruta para renderizar la vista home con productos desde MongoDB
 router.get('/', async (req, res) => {
     try {
-        const products = await Product.find().lean(); // 🔹 Agregamos .lean() para Handlebars
+        const products = await Product.find().lean(); // 🔹 Obtener productos desde MongoDB
         res.render('home', { products });
     } catch (error) {
         console.error('❌ Error al obtener productos:', error);
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // 📌 Ruta para la vista en tiempo real con productos desde MongoDB
 router.get('/realtimeproducts', async (req, res) => {
     try {
-        const products = await Product.find().lean(); // 🔹 Agregamos .lean() aquí también
+        const products = await Product.find().lean(); // 🔹 Obtener productos desde MongoDB
         res.render('realTimeProducts', { products });
     } catch (error) {
         console.error('❌ Error al obtener productos en tiempo real:', error);
