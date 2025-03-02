@@ -9,11 +9,13 @@
                 <h3>{{this.product.title}}</h3>
                 <p><strong>Precio:</strong> ${{this.product.price}}</p>
                 <p><strong>Cantidad:</strong> {{this.quantity}}</p>
-                <button class="remove-from-cart" data-id="{{this.product._id}}">❌ Eliminar</button>
+                <button class="remove-from-cart" data-cart-id="{{../cart._id}}" data-product-id="{{this.product._id}}">
+                    ❌ Eliminar
+                </button>
             </div>
         {{/each}}
     </div>
-    <button id="empty-cart">🗑 Vaciar Carrito</button>
+    <button id="empty-cart" data-cart-id="{{cart._id}}">🗑 Vaciar Carrito</button>
 {{else}}
     <p>🛒 Tu carrito está vacío.</p>
 {{/if}}
