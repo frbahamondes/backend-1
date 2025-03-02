@@ -22,9 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ✅ Asignar evento a botones "Agregar al carrito"
+    // ✅ Función para redirigir a la vista de detalles del producto
+    const goToProductDetails = (productId) => {
+        window.location.href = `/products/${productId}`;
+    };
+
+    // ✅ Asignar eventos a botones "Agregar al carrito" y "Ver detalles"
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', () => addToCart(button.dataset.id));
+    });
+
+    document.querySelectorAll('.view-details').forEach(button => {
+        button.addEventListener('click', () => goToProductDetails(button.dataset.id));
     });
 
     // ✅ Aplicar filtros y ordenamiento
@@ -55,8 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     productCard.classList.add('product-card');
                     productCard.innerHTML = `
                         <h3>${product.title}</h3>
-                        <p>Precio: $${product.price}</p>
-                        <p>Categoría: ${product.category}</p>
+                        <p><strong>Precio:</strong> $${product.price}</p>
+                        <p><strong>Categoría:</strong> ${product.category}</p>
                         <p>${product.description}</p>
                         <button class="view-details" data-id="${product._id}">Ver detalles</button>
                         <button class="add-to-cart" data-id="${product._id}">Agregar al carrito</button>
@@ -68,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // ✅ Reasignar eventos a los nuevos botones
                 document.querySelectorAll('.add-to-cart').forEach(button => {
                     button.addEventListener('click', () => addToCart(button.dataset.id));
+                });
+
+                document.querySelectorAll('.view-details').forEach(button => {
+                    button.addEventListener('click', () => goToProductDetails(button.dataset.id));
                 });
 
             } else {
