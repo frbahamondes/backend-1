@@ -7,6 +7,7 @@ const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const session = require('express-session'); // 🆕 Añadido
 
 // ✅ Utilidades locales
 const { hashPassword, validatePassword } = require('./utils.js');
@@ -64,6 +65,16 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 🆕 Middleware de sesión
+app.use(session({
+    secret: 'secretoCoder123', // 🔐 Idealmente debe venir de process.env
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 // 1 hora
+    }
+}));
 
 // 🔹 Rutas
 const productsRouter = require('./routes/products.router');

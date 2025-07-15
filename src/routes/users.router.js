@@ -1,15 +1,13 @@
-// src/routes/users.router.js
 const express = require('express');
 const router = express.Router();
 
 const UserModel = require('../models/user.model');
-const { validatePassword, hashPassword } = require('../utils'); // ✅ Agregado hashPassword
+const { validatePassword, hashPassword } = require('../utils');
 
-// Ruta POST /login
+// 🔐 Ruta POST /login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Validar datos
     if (!email || !password) {
         return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
@@ -27,15 +25,18 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({ error: 'Contraseña incorrecta' });
         }
 
-        // Si todo está ok
+        // ✅ Guardar en sesión
+        req.session.user = {
+            _id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role
+        };
+
         res.status(200).json({
             message: '¡Login exitoso!',
-            user: {
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email,
-                role: user.role
-            }
+            user: req.session.user
         });
 
     } catch (error) {
@@ -43,7 +44,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ✅ Ruta POST /register
+// 🧾 Ruta POST /register
 router.post('/register', async (req, res) => {
     const { first_name, last_name, email, age, password } = req.body;
 
@@ -63,7 +64,7 @@ router.post('/register', async (req, res) => {
             last_name,
             email,
             age,
-            password: hashPassword(password), // 🔐 Encriptar la contraseña
+            password: hashPassword(password),
             role: 'user'
         });
 
@@ -79,6 +80,17 @@ router.post('/register', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error al registrar el usuario' });
     }
+});
+
+// 🧠 Ruta GET /current (verifica la sesión)
+router.get('/current', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'No hay usuario en sesión' });
+    }
+
+    res.status(200).json({
+        user: req.session.user
+    });
 });
 
 module.exports = router;
