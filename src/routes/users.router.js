@@ -93,4 +93,19 @@ router.get('/current', (req, res) => {
     });
 });
 
+// 🔒 Ruta GET /logout (cierra sesión)
+router.get('/logout', (req, res) => {
+    if (req.session.user) {
+        req.session.destroy(err => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al cerrar sesión' });
+            }
+            res.clearCookie('connect.sid'); // 💡 Elimina cookie de sesión
+            res.status(200).json({ message: 'Sesión cerrada correctamente' });
+        });
+    } else {
+        res.status(400).json({ error: 'No hay sesión activa' });
+    }
+});
+
 module.exports = router;
