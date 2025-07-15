@@ -6,78 +6,101 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
-const mongoose = require('mongoose'); // 🔹 Importamos Mongoose
+const mongoose = require('mongoose');
+
+// ✅ Utilidades locales
+const { hashPassword, validatePassword } = require('./utils.js');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 🔹 Conectar a MongoDB Atlas (CORREGIDO)
+// 🔹 Prueba temporal de bcrypt
+const password = 'coder123';
+const hashed = hashPassword(password);
+console.log('🔐 Hash generado:', hashed);
+console.log('🔍 ¿La contraseña es válida?', validatePassword('coder123', hashed)); // true
+
+// 🔹 Conectar a MongoDB
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('🟢 Conectado a MongoDB Atlas'))
-.catch(error => console.error('🔴 Error conectando a MongoDB:', error));
+    .then(async () => {
+        console.log('🟢 Conectado a MongoDB Atlas');
 
-// 🔹 Configurar Handlebars como motor de plantillas
+        // ✅ Crear usuario de prueba
+        const UserModel = require('./models/user.model');
+        const emailPrueba = 'coder@coder.com';
+
+        const usuarioExistente = await UserModel.findOne({ email: emailPrueba });
+
+        if (!usuarioExistente) {
+            try {
+                await UserModel.create({
+                    first_name: 'Coder',
+                    last_name: 'House',
+                    email: emailPrueba,
+                    age: 25,
+                    password: hashPassword('coder123'), // 👈 Contraseña hasheada
+                    role: 'admin'
+                });
+                console.log('👤 Usuario de prueba creado');
+            } catch (error) {
+                console.error('❌ Error al crear el usuario de prueba:', error.message);
+            }
+        } else {
+            console.log('ℹ️ El usuario de prueba ya existe');
+        }
+    })
+    .catch(error => console.error('🔴 Error conectando a MongoDB:', error));
+
+// 🔹 Configuración de Handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-// 🔹 Middleware para manejar JSON y archivos estáticos
+// 🔹 Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// 🔹 Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🔹 Importamos los routers
+// 🔹 Rutas
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
-const viewsRouter = require('./routes/views.router'); 
+const viewsRouter = require('./routes/views.router');
 
-// 🔹 Usamos el router de vistas
-app.use('/', viewsRouter); 
-
-// 🔹 Rutas base de API
+app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 
-// 🔹 Configuración de WebSockets
+// 🔹 WebSockets
 io.on('connection', (socket) => {
     console.log('🟢 Cliente conectado');
 
-    // Función para leer productos del archivo JSON
     const leerProductos = () => {
-        const productsFilePath = path.join(__dirname, 'data/products.json');
-        return JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
+        const filePath = path.join(__dirname, 'data', 'products.json');
+        return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     };
 
-    // Función para escribir productos en el archivo JSON
     const escribirProductos = (productos) => {
-        const productsFilePath = path.join(__dirname, 'data/products.json');
-        fs.writeFileSync(productsFilePath, JSON.stringify(productos, null, 2));
+        const filePath = path.join(__dirname, 'data', 'products.json');
+        fs.writeFileSync(filePath, JSON.stringify(productos, null, 2));
     };
 
-    // Enviar la lista de productos actualizada a todos los clientes
     const enviarProductosActualizados = () => {
         const productos = leerProductos();
         io.emit('actualizarProductos', productos);
-        console.log('📢 Nueva lista de productos enviada a todos los clientes');
+        console.log('📢 Nueva lista de productos enviada');
     };
 
-    // 📌 Escuchar cuando un cliente agrega un producto
     socket.on('agregarProducto', (nuevoProducto) => {
         const productos = leerProductos();
-
-        // Asignar un ID único al producto nuevo
         const nuevoId = productos.length > 0 ? productos[productos.length - 1].id + 1 : 1;
 
-        // Asignar valores por defecto si no están presentes
         const productoConValores = {
             id: nuevoId,
-            title: nuevoProducto.title || "Producto sin nombre",
+            title: nuevoProducto.title || "Sin nombre",
             description: nuevoProducto.description || "Sin descripción",
             price: nuevoProducto.price || 0,
             category: nuevoProducto.category || "Sin categoría",
@@ -85,17 +108,16 @@ io.on('connection', (socket) => {
             status: nuevoProducto.status !== undefined ? nuevoProducto.status : true
         };
 
-        productos.push(productoConValores); // Agregarlo a la lista
-        escribirProductos(productos); // Guardar cambios
-        enviarProductosActualizados(); // Notificar a los clientes
+        productos.push(productoConValores);
+        escribirProductos(productos);
+        enviarProductosActualizados();
     });
 
-    // 📌 Escuchar cuando un cliente elimina un producto
     socket.on('eliminarProducto', (id) => {
         let productos = leerProductos();
-        productos = productos.filter(p => p.id != id); // Filtrar el producto a eliminar
-        escribirProductos(productos); // Guardar cambios
-        enviarProductosActualizados(); // Notificar a los clientes
+        productos = productos.filter(p => p.id != id);
+        escribirProductos(productos);
+        enviarProductosActualizados();
     });
 
     socket.on('disconnect', () => {
@@ -103,7 +125,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// 🔹 Configuración del puerto
+// 🔹 Puerto
 const PORT = 8080;
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
