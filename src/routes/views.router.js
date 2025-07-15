@@ -97,9 +97,15 @@ router.get('/carts/:cid', async (req, res) => {
     }
 });
 
-// 🆕 📌 Ruta para mostrar el formulario de login
+// 🆕 📌 Ruta para mostrar el formulario de login con mensaje opcional
 router.get('/login', (req, res) => {
-    res.render('login'); // Renderiza login.handlebars
+    const success = req.query.success === '1'; // ✅ Detectamos si viene ?success=1
+    res.render('login', { success }); // 👈 Pasamos la variable a la vista
+});
+
+// 📌 Ruta para mostrar el formulario de registro
+router.get('/register', (req, res) => {
+    res.render('register');
 });
 
 module.exports = router;

@@ -59,7 +59,7 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ error: 'El usuario ya está registrado' });
         }
 
-        const newUser = await UserModel.create({
+        await UserModel.create({
             first_name,
             last_name,
             email,
@@ -68,14 +68,8 @@ router.post('/register', async (req, res) => {
             role: 'user'
         });
 
-        res.status(201).json({
-            message: 'Usuario registrado correctamente',
-            user: {
-                id: newUser._id,
-                email: newUser.email,
-                role: newUser.role
-            }
-        });
+        // ✅ Redirigir al login con mensaje de éxito
+        return res.redirect('/login?success=1');
 
     } catch (error) {
         res.status(500).json({ error: 'Error al registrar el usuario' });

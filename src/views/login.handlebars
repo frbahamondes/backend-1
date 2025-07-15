@@ -1,5 +1,12 @@
 <h1>Iniciar Sesión</h1>
 
+{{!-- ✅ Mostrar mensaje si success es true --}}
+{{#if success}}
+  <div style="color: green; margin-bottom: 20px; font-weight: bold;">
+    ✅ ¡Usuario registrado correctamente! Ya puedes iniciar sesión.
+  </div>
+{{/if}}
+
 <form class="form-container" action="/api/users/login" method="POST">
     <div>
         <label for="email">Correo electrónico:</label><br>
