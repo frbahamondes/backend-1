@@ -1,3 +1,4 @@
+// src/routes/views.router.js
 const express = require('express');
 const Product = require('../models/product.model'); // 📌 Importamos el modelo de productos
 const Cart = require('../models/cart.model'); // 📌 Importamos el modelo de carritos

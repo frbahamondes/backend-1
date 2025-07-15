@@ -2,9 +2,9 @@
 
 {{!-- ✅ Mostrar mensaje si success es true --}}
 {{#if success}}
-  <div style="color: green; margin-bottom: 20px; font-weight: bold;">
+<div class="success-message">
     ✅ ¡Usuario registrado correctamente! Ya puedes iniciar sesión.
-  </div>
+</div>
 {{/if}}
 
 <form class="form-container" action="/api/users/login" method="POST">
