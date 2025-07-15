@@ -32,7 +32,13 @@ router.get('/products', async (req, res) => {
         const filter = category ? { category } : {};
         const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {};
 
-        const options = { page: parseInt(page), limit: parseInt(limit), sort: sortOption, lean: true };
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sortOption,
+            lean: true
+        };
+
         const products = await Product.paginate(filter, options);
 
         const prevLink = products.hasPrevPage ? `/products?page=${products.prevPage}&limit=${limit}` : null;
@@ -57,7 +63,7 @@ router.get('/products', async (req, res) => {
 router.get('/products/:pid', async (req, res) => {
     try {
         console.log(`🔍 Buscando producto con ID: ${req.params.pid}`);
-        
+
         const product = await Product.findById(req.params.pid).lean();
 
         if (!product) {
@@ -72,12 +78,11 @@ router.get('/products/:pid', async (req, res) => {
     }
 });
 
-// 📌 🚀 NUEVA RUTA: Mostrar un carrito específico en la vista 🛒
+// 📌 🚀 Ruta para mostrar un carrito específico en la vista 🛒
 router.get('/carts/:cid', async (req, res) => {
     try {
         console.log(`🛒 Buscando carrito con ID: ${req.params.cid}`);
 
-        // 📌 Buscamos el carrito y obtenemos los detalles de los productos con populate()
         const cart = await Cart.findById(req.params.cid).populate('products.product').lean();
 
         if (!cart) {
@@ -90,6 +95,11 @@ router.get('/carts/:cid', async (req, res) => {
         console.error('❌ Error al obtener el carrito:', error);
         res.status(500).send('Error al cargar el carrito');
     }
+});
+
+// 🆕 📌 Ruta para mostrar el formulario de login
+router.get('/login', (req, res) => {
+    res.render('login'); // Renderiza login.handlebars
 });
 
 module.exports = router;
