@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const UserModel = require('../models/user.model');
-const { validatePassword } = require('../utils');
+const { validatePassword, hashPassword } = require('../utils'); // ✅ Agregado hashPassword
 
 // Ruta POST /login
 router.post('/login', async (req, res) => {
@@ -40,6 +40,44 @@ router.post('/login', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// ✅ Ruta POST /register
+router.post('/register', async (req, res) => {
+    const { first_name, last_name, email, age, password } = req.body;
+
+    if (!first_name || !last_name || !email || !password) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    try {
+        const existingUser = await UserModel.findOne({ email });
+
+        if (existingUser) {
+            return res.status(409).json({ error: 'El usuario ya está registrado' });
+        }
+
+        const newUser = await UserModel.create({
+            first_name,
+            last_name,
+            email,
+            age,
+            password: hashPassword(password), // 🔐 Encriptar la contraseña
+            role: 'user'
+        });
+
+        res.status(201).json({
+            message: 'Usuario registrado correctamente',
+            user: {
+                id: newUser._id,
+                email: newUser.email,
+                role: newUser.role
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error al registrar el usuario' });
     }
 });
 
