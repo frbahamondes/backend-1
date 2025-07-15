@@ -69,10 +69,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
 const viewsRouter = require('./routes/views.router');
+const usersRouter = require('./routes/users.router'); // 👈 AÑADIDO
 
 app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
+app.use('/api/users', usersRouter); // 👈 AÑADIDO
 
 // 🔹 WebSockets
 io.on('connection', (socket) => {
