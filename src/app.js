@@ -1,5 +1,7 @@
 // 🔹 Importaciones necesarias
 require('dotenv').config();
+console.log('🔧 URI de conexión:', process.env.MONGO_URI); // 👈 Agregado para testeo
+
 const express = require('express');
 const { engine } = require('express-handlebars');
 const path = require('path');
@@ -19,10 +21,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // 🔹 Conexión a MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('🟢 Conectado a MongoDB Atlas');
 
