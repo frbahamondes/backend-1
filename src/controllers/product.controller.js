@@ -1,4 +1,5 @@
 const Product = require('../models/product.model');
+const { getAllProducts: getProductsService } = require('../services/product.service'); // 🔸 Importamos el servicio
 
 // 📌 Obtener todos los productos con filtros, paginación, ordenamiento
 const getAllProducts = async (req, res) => {
@@ -6,25 +7,9 @@ const getAllProducts = async (req, res) => {
         console.log('GET /api/products fue llamado');
         const { limit = 10, page = 1, sort, query } = req.query;
 
-        let filter = {};
-        if (query) {
-            filter.category = query;
-        }
+        const products = await getProductsService({ limit, page, sort, query });
 
-        let sortOption = {};
-        if (sort === 'asc') sortOption.price = 1;
-        if (sort === 'desc') sortOption.price = -1;
-
-        const options = {
-            limit: parseInt(limit),
-            page: parseInt(page),
-            sort: sortOption,
-            lean: true,
-        };
-
-        const products = await Product.paginate(filter, options);
         const queryParams = new URLSearchParams({ limit, sort, query }).toString();
-
         const prevLink = products.hasPrevPage ? `/api/products?page=${products.prevPage}&${queryParams}` : null;
         const nextLink = products.hasNextPage ? `/api/products?page=${products.nextPage}&${queryParams}` : null;
 
