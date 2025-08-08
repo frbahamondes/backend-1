@@ -1,7 +1,8 @@
 const productDao = require('../dao/mongo/product.mongo');
 
-const getAllProducts = async () => {
-    return await productDao.getAll();
+// 🔄 Ahora acepta los filtros de paginación, orden y query
+const getAllProducts = async ({ limit, page, sort, query }) => {
+    return await productDao.getAll({ limit, page, sort, query });
 };
 
 const getProductById = async (id) => {

@@ -1,57 +1,29 @@
 // 🔹 Importaciones necesarias
 require('dotenv').config();
-const express = require('express'); // 👈 FALTA
-const path = require('path'); // 👈 FALTA
-const fs = require('fs'); // 👈 FALTA
-const { engine } = require('express-handlebars'); // 👈 FALTA
-
-console.log('🔧 URI de conexión:', process.env.MONGO_URI);
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const { engine } = require('express-handlebars');
 
 const http = require('http');
 const { Server } = require('socket.io');
-const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
+
+const connectDB = require('./config/db'); // 👈 NUEVO
 require('./config/passport.config');
 
-// 🔹 Importar rutas
 const sessionsRouter = require('./routes/sessions.router');
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
 const viewsRouter = require('./routes/views.router');
-const usersRouter = require('./routes/users.routes'); // ✅ CORREGIDA
-
-const { hashPassword } = require('./utils.js');
+const usersRouter = require('./routes/users.routes');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 🔹 Conexión a MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(async () => {
-        console.log('🟢 Conectado a MongoDB Atlas');
-
-        const UserModel = require('./models/user.model');
-        const emailPrueba = 'coder@coder.com';
-
-        const usuarioExistente = await UserModel.findOne({ email: emailPrueba });
-
-        if (!usuarioExistente) {
-            await UserModel.create({
-                first_name: 'Coder',
-                last_name: 'House',
-                email: emailPrueba,
-                age: 25,
-                password: hashPassword('coder123'),
-                role: 'admin'
-            });
-            console.log('👤 Usuario de prueba creado');
-        } else {
-            console.log('ℹ️ El usuario de prueba ya existe');
-        }
-    })
-    .catch(error => console.error('🔴 Error conectando a MongoDB:', error));
+connectDB(); // 👈 NUEVO: conexión a MongoDB
 
 // 🔹 Configuración de Handlebars
 app.engine('handlebars', engine());
@@ -68,9 +40,7 @@ app.use(session({
     secret: 'secretoCoder123',
     resave: false,
     saveUninitialized: false,
-    cookie: {
-        maxAge: 1000 * 60 * 60 // 1 hora
-    }
+    cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
 // ✅ Inicializar Passport
@@ -80,7 +50,7 @@ app.use(passport.initialize());
 app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
-app.use('/api/users', usersRouter); // 👈 Esta es la nueva ruta modularizada
+app.use('/api/users', usersRouter);
 app.use('/api/sessions', sessionsRouter);
 
 // 🔹 WebSockets
