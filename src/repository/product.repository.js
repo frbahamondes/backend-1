@@ -1,4 +1,4 @@
-export default class ProductRepository {
+class ProductRepository {
     constructor(dao) {
         this.dao = dao;
     }
@@ -23,3 +23,5 @@ export default class ProductRepository {
         return this.dao.delete(id);
     };
 }
+
+module.exports = ProductRepository;

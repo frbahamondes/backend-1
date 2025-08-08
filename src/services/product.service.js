@@ -1,30 +1,31 @@
-const productDao = require('../dao/mongo/product.mongo');
+const ProductRepository = require('../repository/product.repository');
+const productDao = require('../dao/mongo/product.mongo'); // ✅ Ya está instanciado en el export
+const ProductDTO = require('../dto/product.dto');
 
-// 🔄 Ahora acepta los filtros de paginación, orden y query
-const getAllProducts = async ({ limit, page, sort, query }) => {
-    return await productDao.getAll({ limit, page, sort, query });
-};
+const productRepository = new ProductRepository(productDao);
 
-const getProductById = async (id) => {
-    return await productDao.getById(id);
-};
+class ProductService {
+    async getAllProducts({ limit, page, sort, query }) {
+        return await productRepository.getProducts({ limit, page, sort, query });
+    }
 
-const createProduct = async (productData) => {
-    return await productDao.create(productData);
-};
+    async getProductById(id) {
+        return await productRepository.getProductById(id);
+    }
 
-const updateProduct = async (id, updateData) => {
-    return await productDao.update(id, updateData);
-};
+    async createProduct(productData) {
+        const productDTO = new ProductDTO(productData);
+        return await productRepository.createProduct(productDTO);
+    }
 
-const deleteProduct = async (id) => {
-    return await productDao.delete(id);
-};
+    async updateProduct(id, updateData) {
+        return await productRepository.updateProduct(id, updateData);
+    }
 
-module.exports = {
-    getAllProducts,
-    getProductById,
-    createProduct,
-    updateProduct,
-    deleteProduct
-};
+    async deleteProduct(id) {
+        return await productRepository.deleteProduct(id);
+    }
+}
+
+// 👇 Esta línea es clave para importar la instancia del servicio
+module.exports = new ProductService();

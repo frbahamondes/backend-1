@@ -1,5 +1,5 @@
 const Product = require('../models/product.model');
-const { getAllProducts: getProductsService } = require('../services/product.service'); // 🔸 Importamos el servicio
+const productService = require('../services/product.service'); // 🔸 Importamos el servicio
 
 // 📌 Obtener todos los productos con filtros, paginación, ordenamiento
 const getAllProducts = async (req, res) => {
@@ -7,7 +7,7 @@ const getAllProducts = async (req, res) => {
         console.log('GET /api/products fue llamado');
         const { limit = 10, page = 1, sort, query } = req.query;
 
-        const products = await getProductsService({ limit, page, sort, query });
+        const products = await productService.getAllProducts({ limit, page, sort, query });
 
         const queryParams = new URLSearchParams({ limit, sort, query }).toString();
         const prevLink = products.hasPrevPage ? `/api/products?page=${products.prevPage}&${queryParams}` : null;
