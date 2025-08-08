@@ -1,27 +1,29 @@
-const Product = require('../models/product.model'); // Modelo directo
+const productDao = require('../dao/mongo/product.mongo');
 
-const getAllProducts = async ({ limit, page, sort, query }) => {
-    let filter = {};
-    if (query) {
-        filter.category = query;
-    }
+const getAllProducts = async () => {
+    return await productDao.getAll();
+};
 
-    let sortOption = {};
-    if (sort === 'asc') sortOption.price = 1;
-    if (sort === 'desc') sortOption.price = -1;
+const getProductById = async (id) => {
+    return await productDao.getById(id);
+};
 
-    const options = {
-        limit: parseInt(limit),
-        page: parseInt(page),
-        sort: sortOption,
-        lean: true,
-    };
+const createProduct = async (productData) => {
+    return await productDao.create(productData);
+};
 
-    const products = await Product.paginate(filter, options);
+const updateProduct = async (id, updateData) => {
+    return await productDao.update(id, updateData);
+};
 
-    return products;
+const deleteProduct = async (id) => {
+    return await productDao.delete(id);
 };
 
 module.exports = {
     getAllProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
 };

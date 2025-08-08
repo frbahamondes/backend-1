@@ -1,11 +1,12 @@
 // 🔹 Importaciones necesarias
 require('dotenv').config();
-console.log('🔧 URI de conexión:', process.env.MONGO_URI); // 👈 Agregado para testeo
+const express = require('express'); // 👈 FALTA
+const path = require('path'); // 👈 FALTA
+const fs = require('fs'); // 👈 FALTA
+const { engine } = require('express-handlebars'); // 👈 FALTA
 
-const express = require('express');
-const { engine } = require('express-handlebars');
-const path = require('path');
-const fs = require('fs');
+console.log('🔧 URI de conexión:', process.env.MONGO_URI);
+
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
@@ -13,8 +14,14 @@ const session = require('express-session');
 const passport = require('passport');
 require('./config/passport.config');
 
-const sessionsRouter = require('./routes/sessions.router'); // 🆕 Ruta para JWT
-const { hashPassword, validatePassword } = require('./utils.js');
+// 🔹 Importar rutas
+const sessionsRouter = require('./routes/sessions.router');
+const productsRouter = require('./routes/products.router');
+const cartsRouter = require('./routes/carts.router');
+const viewsRouter = require('./routes/views.router');
+const usersRouter = require('./routes/users.routes'); // ✅ CORREGIDA
+
+const { hashPassword } = require('./utils.js');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +32,6 @@ mongoose.connect(process.env.MONGO_URI)
     .then(async () => {
         console.log('🟢 Conectado a MongoDB Atlas');
 
-        // Crear usuario de prueba si no existe
         const UserModel = require('./models/user.model');
         const emailPrueba = 'coder@coder.com';
 
@@ -71,16 +77,11 @@ app.use(session({
 app.use(passport.initialize());
 
 // 🔹 Rutas
-const productsRouter = require('./routes/products.router');
-const cartsRouter = require('./routes/carts.router');
-const viewsRouter = require('./routes/views.router');
-const usersRouter = require('./routes/users.router');
-
 app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/sessions', sessionsRouter); // 🆕 Ruta de sesiones protegidas por JWT
+app.use('/api/users', usersRouter); // 👈 Esta es la nueva ruta modularizada
+app.use('/api/sessions', sessionsRouter);
 
 // 🔹 WebSockets
 io.on('connection', (socket) => {
