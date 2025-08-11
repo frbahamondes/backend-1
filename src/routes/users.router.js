@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 
 const UserModel = require('../models/user.model');
-const { validatePassword, hashPassword } = require('../utils');
+const { validatePassword } = require('../utils');
+const { isAuthenticated } = require('../middleware/auth.middleware');
 
-// 🔐 Ruta POST /login
+// Usamos solo el controlador para register
+const { registerUser } = require('../controllers/users.controller');
+
+// 🔐 Ruta POST /login (login directo, maneja sesión)
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -25,7 +29,6 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({ error: 'Contraseña incorrecta' });
         }
 
-        // ✅ Guardar en sesión
         req.session.user = {
             _id: user._id,
             first_name: user.first_name,
@@ -44,37 +47,8 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 🧾 Ruta POST /register
-router.post('/register', async (req, res) => {
-    const { first_name, last_name, email, age, password } = req.body;
-
-    if (!first_name || !last_name || !email || !password) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios' });
-    }
-
-    try {
-        const existingUser = await UserModel.findOne({ email });
-
-        if (existingUser) {
-            return res.status(409).json({ error: 'El usuario ya está registrado' });
-        }
-
-        await UserModel.create({
-            first_name,
-            last_name,
-            email,
-            age,
-            password: hashPassword(password),
-            role: 'user'
-        });
-
-        // ✅ Redirigir al login con mensaje de éxito
-        return res.redirect('/login?success=1');
-
-    } catch (error) {
-        res.status(500).json({ error: 'Error al registrar el usuario' });
-    }
-});
+// 🧾 Ruta POST /register (usa controlador externo)
+router.post('/register', registerUser);
 
 // 🧠 Ruta GET /current (verifica la sesión)
 router.get('/current', (req, res) => {
@@ -94,12 +68,20 @@ router.get('/logout', (req, res) => {
             if (err) {
                 return res.status(500).json({ error: 'Error al cerrar sesión' });
             }
-            res.clearCookie('connect.sid'); // 💡 Elimina cookie de sesión
+            res.clearCookie('connect.sid');
             res.status(200).json({ message: 'Sesión cerrada correctamente' });
         });
     } else {
         res.status(400).json({ error: 'No hay sesión activa' });
     }
+});
+
+// 🔐 Ruta protegida /perfil
+router.get('/perfil', isAuthenticated, (req, res) => {
+    res.status(200).json({
+        mensaje: 'Perfil del usuario autenticado',
+        usuario: req.session.user
+    });
 });
 
 module.exports = router;

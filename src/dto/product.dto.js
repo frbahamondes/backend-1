@@ -10,4 +10,4 @@ class ProductDTO {
     }
 }
 
-module.exports = ProductDTO;n
+module.exports = ProductDTO;

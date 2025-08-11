@@ -10,20 +10,20 @@ const { Server } = require('socket.io');
 const session = require('express-session');
 const passport = require('passport');
 
-const connectDB = require('./config/db'); // 👈 NUEVO
+const connectDB = require('./config/db');
 require('./config/passport.config');
 
 const sessionsRouter = require('./routes/sessions.router');
 const productsRouter = require('./routes/products.router');
 const cartsRouter = require('./routes/carts.router');
 const viewsRouter = require('./routes/views.router');
-const usersRouter = require('./routes/users.routes');
+const usersRouter = require('./routes/users.router'); // ✅ CORREGIDO: antes decía .routes
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-connectDB(); // 👈 NUEVO: conexión a MongoDB
+connectDB(); // 👈 conexión a MongoDB
 
 // 🔹 Configuración de Handlebars
 app.engine('handlebars', engine());
@@ -50,7 +50,7 @@ app.use(passport.initialize());
 app.use('/', viewsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/users', usersRouter); // ✅ Usa el router fusionado
 app.use('/api/sessions', sessionsRouter);
 
 // 🔹 WebSockets
