@@ -4,6 +4,7 @@ const router = express.Router();
 const UserModel = require('../models/user.model');
 const { validatePassword } = require('../utils');
 const { isAuthenticated } = require('../middleware/auth.middleware');
+const UserDTO = require('../dto/user.dto');  // 🔹 Importamos DTO
 
 // Usamos solo el controlador para register
 const { registerUser } = require('../controllers/users.controller');
@@ -29,6 +30,7 @@ router.post('/login', async (req, res) => {
             return res.status(403).json({ error: 'Contraseña incorrecta' });
         }
 
+        // Guardamos la sesión igual
         req.session.user = {
             _id: user._id,
             first_name: user.first_name,
@@ -37,9 +39,12 @@ router.post('/login', async (req, res) => {
             role: user.role
         };
 
+        // Enviamos al cliente solo datos filtrados con DTO
+        const userDTO = new UserDTO(user);
+
         res.status(200).json({
             message: '¡Login exitoso!',
-            user: req.session.user
+            user: userDTO
         });
 
     } catch (error) {
@@ -56,8 +61,11 @@ router.get('/current', (req, res) => {
         return res.status(401).json({ error: 'No hay usuario en sesión' });
     }
 
+    // Usar DTO para enviar info limpia al cliente
+    const userDTO = new UserDTO(req.session.user);
+
     res.status(200).json({
-        user: req.session.user
+        user: userDTO
     });
 });
 
@@ -78,9 +86,12 @@ router.get('/logout', (req, res) => {
 
 // 🔐 Ruta protegida /perfil
 router.get('/perfil', isAuthenticated, (req, res) => {
+    // Usar DTO para enviar datos filtrados
+    const userDTO = new UserDTO(req.session.user);
+
     res.status(200).json({
         mensaje: 'Perfil del usuario autenticado',
-        usuario: req.session.user
+        usuario: userDTO
     });
 });
 
